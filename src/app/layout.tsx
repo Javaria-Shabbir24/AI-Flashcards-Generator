@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn, ClerkLoading } from "@clerk/nextjs";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,10 +19,20 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ClerkProvider>
-        {children}
+          {/* Loading state while Clerk checks authentication */}
+          <ClerkLoading>
+            <div>Loading...</div>
+          </ClerkLoading>
+
+          <SignedIn>
+            {children} {/* Render protected content if signed in */}
+          </SignedIn>
+
+          <SignedOut>
+            <RedirectToSignIn /> {/* Redirect to Clerk sign-in page */}
+          </SignedOut>
         </ClerkProvider>
-        
-        </body>
+      </body>
     </html>
   );
 }
