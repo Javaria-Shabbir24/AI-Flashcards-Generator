@@ -1,6 +1,33 @@
-// src/pages/index.tsx
+"use client"; // Add this line to indicate a Client Component
+
+import { useState } from 'react';
+import { fetchAnswer } from '../utils/api'; // Import the API function
+import StripeCheckoutButton from '../components/StripeCheckoutButton'; // Import the Stripe button component
 
 export default function Home() {
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    console.log('Submitting question:', question); // Debugging line
+
+    try {
+      const result = await fetchAnswer(question);
+      setAnswer(result);
+    } catch (error) {
+      setError('Failed to fetch answer.');
+      console.error('Error fetching answer:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={styles.homepage}>
       <header style={styles.header}>
@@ -10,14 +37,21 @@ export default function Home() {
         </p>
       </header>
       <main>
-        <form style={styles.form}>
+        <form style={styles.form} onSubmit={handleSubmit}>
           <input
             type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
             placeholder="Enter your question here..."
             style={styles.input}
           />
-          <button type="submit" style={styles.button}>Create Flashcard</button>
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? 'Creating...' : 'Create Flashcard'}
+          </button>
         </form>
+        {answer && <div style={styles.answerBox}>{answer}</div>}
+        {error && <div style={styles.errorBox}>{error}</div>}
+        <StripeCheckoutButton /> {/* Add the Stripe button component */}
       </main>
     </div>
   );
@@ -68,5 +102,19 @@ const styles = {
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer'
+  },
+  answerBox: {
+    marginTop: '20px',
+    padding: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    backgroundColor: '#fff'
+  },
+  errorBox: {
+    marginTop: '20px',
+    padding: '10px',
+    border: '1px solid #f00',
+    borderRadius: '5px',
+    backgroundColor: '#fdd'
   }
 };
